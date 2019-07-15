@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter/services.dart';
+import 'package:wakelock/wakelock.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final String url;
@@ -30,6 +31,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
     //Hide statusbar.
     SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
+    Wakelock.enable();
 
     super.initState();
   }
@@ -40,6 +42,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     _controller.dispose();
 
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+    Wakelock.disable();
 
     super.dispose();
   }

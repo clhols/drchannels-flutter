@@ -11,7 +11,7 @@ class DrApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'DR channels',
-      debugShowCheckedModeBanner: true,
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // This is the theme of your application.
         //
