@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 abstract class DrMuApi {
-  //Future<List<Channel>> getAllActiveDrTvChannels();
+  Future<List<Channel>> getAllActiveDrTvChannels();
 
   //Future<Manifest> getManifest(String uri);
 
@@ -15,11 +15,11 @@ abstract class DrMuApi {
 
   Future<List<MuNowNext>> getScheduleNowNext();
 
-  //Future<SearchResult> search(String query);
+//Future<SearchResult> search(String query);
 
-  //Future<MostViewed> getMostViewed(String channel, String channelType, int limit)
+//Future<MostViewed> getMostViewed(String channel, String channelType, int limit)
 
-  //Future<Page> getPageTvPrograms(Genre genre);
+//Future<Page> getPageTvPrograms(Genre genre);
 }
 
 const String API_VERSION = "1.4";
@@ -33,7 +33,21 @@ class DrMuRepository implements DrMuApi {
 
     if (response.statusCode == 200) {
       // If the call to the server was successful, parse the JSON.
-      return compute(parseScheduleNowNextJson, response.body);
+      return compute(parseNowNextList, response.body);
+    } else {
+      // If that call was not successful, throw an error.
+      throw Exception('Failed to load json');
+    }
+  }
+
+  @override
+  Future<List<Channel>> getAllActiveDrTvChannels() async {
+    final response =
+        await http.get("$API_URL/channel/all-active-dr-tv-channels");
+
+    if (response.statusCode == 200) {
+      // If the call to the server was successful, parse the JSON.
+      return compute(parseChannelList, response.body);
     } else {
       // If that call was not successful, throw an error.
       throw Exception('Failed to load json');
@@ -217,7 +231,7 @@ class ProgramCard {
       expiresSoon: json['ExpiresSoon'],
       onlineGenreText: json['OnlineGenreText'],
       primaryAsset: PrimaryAsset.fromJson(json['PrimaryAsset']),
-      hasPublicPrimaryAsset: json['HasPublicPrimaryAsset'],
+      hasPublicPrimaryAsset: json['HasPublicPrimaryAsset'] ?? false,
       assetTargetTypes: json['AssetTargetTypes'],
       primaryBroadcastStartTime:
           DateTime.parse(json['PrimaryBroadcastStartTime']),
@@ -295,7 +309,138 @@ class Info {
   }
 }
 
-List<MuNowNext> parseScheduleNowNextJson(String responseBody) {
+class Channel {
+  final String type;
+  final List<MuStreamingServer> streamingServers;
+  final String url;
+  final String sourceUrl;
+  final bool webChannel;
+  final String slug;
+  final String urn;
+  final String primaryImageUri;
+  final String presentationUri;
+  final String presentationUriAutoplay;
+  final String title;
+  final String itemLabel;
+  final String subtitle;
+
+  Channel(
+      {this.type,
+      this.streamingServers,
+      this.url,
+      this.sourceUrl,
+      this.webChannel,
+      this.slug,
+      this.urn,
+      this.primaryImageUri,
+      this.presentationUri,
+      this.presentationUriAutoplay,
+      this.title,
+      this.itemLabel,
+      this.subtitle});
+
+  factory Channel.fromJson(Map<String, dynamic> json) {
+    if (json == null) return null;
+    return Channel(
+      type: json['Type'],
+      streamingServers: (json['StreamingServers'] as List)
+          .map((json) => MuStreamingServer.fromJson(json))
+          .toList(),
+      url: json['Url'],
+      sourceUrl: json['SourceUrl'],
+      webChannel: json['WebChannel'],
+      slug: json['Slug'],
+      urn: json['Urn'],
+      primaryImageUri: json['PrimaryImageUri'],
+      presentationUri: json['PresentationUri'],
+      presentationUriAutoplay: json['PresentationUriAutoplay'],
+      title: json['Title'],
+      itemLabel: json['ItemLabel'],
+      subtitle: json['Subtitle'],
+    );
+  }
+
+  MuStreamingServer hlsServer() {
+    return streamingServers.firstWhere((it) => it.linkType == "HLS",
+        orElse: null);
+  }
+
+  MuStreamingServer hdsServer() {
+    return streamingServers.firstWhere((it) => it.linkType == "HDS",
+        orElse: null);
+  }
+
+  MuStreamingServer server() {
+    return hlsServer() ?? hdsServer();
+  }
+}
+
+class MuStreamingServer {
+  final String server;
+  final String linkType;
+  final List<MuStreamQuality> qualities;
+  final bool dynamicUserQualityChange;
+  final String encryptedServer;
+
+  MuStreamingServer(
+      {this.server,
+      this.linkType,
+      this.qualities,
+      this.dynamicUserQualityChange,
+      this.encryptedServer});
+
+  factory MuStreamingServer.fromJson(Map<String, dynamic> json) {
+    if (json == null) return null;
+    return MuStreamingServer(
+      server: json['Server'],
+      linkType: json['LinkType'],
+      qualities: (json['Qualities'] as List)
+          .map((json) => MuStreamQuality.fromJson(json))
+          .toList(),
+      dynamicUserQualityChange: json['DynamicUserQualityChange'],
+      encryptedServer: json['EncryptedServer'],
+    );
+  }
+}
+
+class MuStreamQuality {
+  final int kbps;
+  final List<MuStream> streams;
+
+  MuStreamQuality({this.kbps, this.streams});
+
+  factory MuStreamQuality.fromJson(Map<String, dynamic> json) {
+    if (json == null) return null;
+    return MuStreamQuality(
+      kbps: json['Kbps'],
+      streams: (json['Streams'] as List)
+          .map((json) => MuStream.fromJson(json))
+          .toList(),
+    );
+  }
+}
+
+class MuStream {
+  final String stream;
+  final String encryptedStream;
+
+  MuStream({this.stream, this.encryptedStream});
+
+  factory MuStream.fromJson(Map<String, dynamic> json) {
+    if (json == null) return null;
+    return MuStream(
+      stream: json['Stream'],
+      encryptedStream: json['EncryptedStream'],
+    );
+  }
+}
+
+List<MuNowNext> parseNowNextList(String responseBody) {
   var list = jsonDecode(responseBody) as List;
   return list.map((json) => MuNowNext.fromJson(json)).toList();
+}
+
+List<Channel> parseChannelList(String responseBody) {
+  var list = jsonDecode(responseBody) as List;
+  return list.map((json) => Channel.fromJson(json)).toList();
 }

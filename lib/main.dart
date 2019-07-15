@@ -1,3 +1,4 @@
+import 'package:drchannels/videoplayer.dart';
 import 'package:flutter/material.dart';
 
 import 'drapi.dart';
@@ -66,6 +67,25 @@ class _ChannelsHomePageState extends State<ChannelsHomePage> {
     });
   }
 
+  void playTvChannel(MuNowNext nowNext) async {
+    var channels = await repo.getAllActiveDrTvChannels();
+
+    var server = channels.firstWhere((it) => it.slug == nowNext.channelSlug).server();
+    var qualities = server.qualities;
+    qualities.sort((o1, o2) => o2.kbps.compareTo(o1.kbps));
+    var stream = qualities.first.streams.first.stream;
+    var url = "${server.server}/$stream";
+
+    print("Playing video from URL: $url");
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) =>
+              VideoPlayerScreen(url: url)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -80,25 +100,35 @@ class _ChannelsHomePageState extends State<ChannelsHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Center(
-          child: FutureBuilder<List<MuNowNext>>(
-            future: channels,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return ListView(children: [
+      body: Center(
+        child: FutureBuilder<List<MuNowNext>>(
+          future: channels,
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return ListView(
+                  children: ListTile.divideTiles(
+                context: context,
+                tiles: [
                   ...snapshot.data.map((nowNext) => ListTile(
-                        title: Text(nowNext.now.title),
-                        subtitle: Text(nowNext.now.description),
-                      ))
-                ]);
-              } else if (snapshot.hasError) {
-                return Text("${snapshot.error}");
-              }
-              return CircularProgressIndicator();
-            },
-          ),
+                      leading: CircleAvatar(
+                        backgroundImage: NetworkImage(
+                            nowNext.now.programCard.primaryImageUri),
+                      ),
+                      title: Text(nowNext.now.title),
+                      subtitle: Text(nowNext.now.description),
+                      dense: true,
+                      contentPadding:
+                          EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                      onTap: () {
+                        playTvChannel(nowNext);
+                      }))
+                ],
+              ).toList());
+            } else if (snapshot.hasError) {
+              return Text("${snapshot.error}");
+            }
+            return CircularProgressIndicator();
+          },
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -108,11 +138,4 @@ class _ChannelsHomePageState extends State<ChannelsHomePage> {
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
-}
-
-class ChannelsList extends AnimatedList {
-  final List<MuNowNext> channels;
-
-  ChannelsList({Key key, AnimatedListItemBuilder itemBuilder, this.channels})
-      : super(key: key, itemBuilder: itemBuilder);
 }
