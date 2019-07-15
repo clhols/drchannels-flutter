@@ -116,7 +116,7 @@ class _ChannelsHomePageState extends State<ChannelsHomePage> {
                       ),
                       title: Text(nowNext.now.title),
                       subtitle: Text(nowNext.now.description),
-                      dense: true,
+                      dense: false,
                       contentPadding:
                           EdgeInsets.symmetric(vertical: 12, horizontal: 24),
                       onTap: () {
@@ -131,11 +131,6 @@ class _ChannelsHomePageState extends State<ChannelsHomePage> {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
