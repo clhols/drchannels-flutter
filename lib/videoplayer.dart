@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final String url;
+
   VideoPlayerScreen({Key key, @required this.url}) : super(key: key);
 
   @override
@@ -54,10 +55,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
           print("Video aspect ratio is ${_controller.value.aspectRatio}");
           // If the VideoPlayerController has finished initialization, use
           // the data it provides to limit the aspect ratio of the VideoPlayer.
-          return AspectRatio(
-            aspectRatio: _controller.value.aspectRatio,
-            // Use the VideoPlayer widget to display the video.
-            child: VideoPlayer(_controller),
+          return Center(
+            child: AspectRatio(
+              aspectRatio: _controller.value.aspectRatio,
+              // Use the VideoPlayer widget to display the video.
+              child: VideoPlayer(_controller),
+            )
           );
         } else {
           // If the VideoPlayerController is still initializing, show a
