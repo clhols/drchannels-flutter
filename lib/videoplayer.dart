@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import 'package:flutter/services.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final String url;
@@ -26,6 +27,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
     _initializeVideoPlayerFuture = _controller.initialize();
 
+    //Hide statusbar.
+    SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
+
     super.initState();
   }
 
@@ -33,6 +37,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   void dispose() {
     // Ensure disposing of the VideoPlayerController to free up resources.
     _controller.dispose();
+
+    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
 
     super.dispose();
   }
