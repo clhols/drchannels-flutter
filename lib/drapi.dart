@@ -65,8 +65,8 @@ class MuNowNext {
 
   factory MuNowNext.fromJson(Map<String, dynamic> json) {
     var nextList = (json['Next'] as List)
-        .map((json) => MuScheduleBroadcast.fromJson(json))
-        .toList();
+        ?.map((json) => MuScheduleBroadcast.fromJson(json))
+        ?.toList();
 
     return MuNowNext(
       channelSlug: json['ChannelSlug'],
@@ -127,6 +127,7 @@ class MuScheduleBroadcast {
   }
 
   factory MuScheduleBroadcast.fromJson(Map<String, dynamic> json) {
+    if (json == null) return null;
     return MuScheduleBroadcast(
         title: json['Title'],
         description: json['Description'],

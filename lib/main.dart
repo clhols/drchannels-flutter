@@ -71,7 +71,8 @@ class _ChannelsHomePageState extends State<ChannelsHomePage> {
   void playTvChannel(MuNowNext nowNext) async {
     var channels = await repo.getAllActiveDrTvChannels();
 
-    var server = channels.firstWhere((it) => it.slug == nowNext.channelSlug).server();
+    var server =
+        channels.firstWhere((it) => it.slug == nowNext.channelSlug).server();
     var qualities = server.qualities;
     qualities.sort((o1, o2) => o2.kbps.compareTo(o1.kbps));
     var stream = qualities.first.streams.first.stream;
@@ -81,9 +82,7 @@ class _ChannelsHomePageState extends State<ChannelsHomePage> {
 
     Navigator.push(
       context,
-      MaterialPageRoute(
-          builder: (context) =>
-              VideoPlayerScreen(url: url)),
+      MaterialPageRoute(builder: (context) => VideoPlayerScreen(url: url)),
     );
   }
 
@@ -110,19 +109,20 @@ class _ChannelsHomePageState extends State<ChannelsHomePage> {
                   children: ListTile.divideTiles(
                 context: context,
                 tiles: [
-                  ...snapshot.data.map((nowNext) => ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: NetworkImage(
-                            nowNext.now.programCard.primaryImageUri),
-                        radius: 28,
-                      ),
-                      title: Text(nowNext.now.title),
-                      subtitle: Text(nowNext.now.description),
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                      onTap: () {
-                        playTvChannel(nowNext);
-                      }))
+                  ...snapshot.data.where((it) => it.now != null).map(
+                      (nowNext) => ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage: NetworkImage(
+                                nowNext.now.programCard.primaryImageUri),
+                            radius: 28,
+                          ),
+                          title: Text(nowNext.now.title),
+                          subtitle: Text(nowNext.now.description),
+                          contentPadding: EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 24),
+                          onTap: () {
+                            playTvChannel(nowNext);
+                          }))
                 ],
               ).toList());
             } else if (snapshot.hasError) {
