@@ -120,7 +120,7 @@ class MuScheduleBroadcast {
       this.isRerun});
 
   String getPrimaryAssetUri() {
-    if (programCard.hasPublicPrimaryAsset) {
+    if (programCard?.hasPublicPrimaryAsset ?? false) {
       return programCard.primaryAsset.uri;
     }
     return "";
@@ -129,12 +129,27 @@ class MuScheduleBroadcast {
   factory MuScheduleBroadcast.fromJson(Map<String, dynamic> json) {
     if (json == null) return null;
     return MuScheduleBroadcast(
-        title: json['Title'],
-        description: json['Description'],
-        subtitle: json['Subtitle'],
-        startTime: DateTime.parse(json['StartTime']),
-        endTime: DateTime.parse(json['EndTime']),
-        programCard: ProgramCard.fromJson(json['ProgramCard']));
+      title: json['Title'],
+      description: json['Description'],
+      subtitle: json['Subtitle'] ?? "",
+      startTime: DateTime.parse(json['StartTime']),
+      endTime: DateTime.parse(json['EndTime']),
+      programCard: ProgramCard.fromJson(json['ProgramCard']),
+      onlineGenreText: json['OnlineGenreText'],
+      productionNumber: json['ProductionNumber'],
+      programCardHasPrimaryAsset: json['ProgramCardHasPrimaryAsset'],
+      seriesHasProgramCardWithPrimaryAsset:
+          json['SeriesHasProgramCardWithPrimaryAsset'],
+      announcedStartTime: DateTime.parse(json['AnnouncedStartTime']),
+      announcedEndTime: DateTime.parse(json['AnnouncedEndTime']),
+      productionCountry: json['ProductionCountry'],
+      productionYear: json['ProductionYear'] ?? 0,
+      videoWidescreen: json['VideoWidescreen'] ?? false,
+      subtitlesTTV: json['SubtitlesTTV'] ?? false,
+      videoHD: json['VideoHD'] ?? false,
+      whatsOnUri: json['WhatsOnUri'],
+      isRerun: json['IsRerun'],
+    );
   }
 }
 
@@ -215,22 +230,22 @@ class ProgramCard {
   factory ProgramCard.fromJson(Map<String, dynamic> json) {
     return ProgramCard(
       type: json['Type'],
-      seriesTitle: json['SeriesTitle'],
-      episodeTitle: json['EpisodeTitle'],
-      seriesSlug: json['SeriesSlug'],
-      seriesUrn: json['SeriesUrn'],
-      hostName: json['HostName'],
-      seriesHostName: json['SeriesHostName'],
+      seriesTitle: json['SeriesTitle'] ?? "",
+      episodeTitle: json['EpisodeTitle'] ?? "",
+      seriesSlug: json['SeriesSlug'] ?? "",
+      seriesUrn: json['SeriesUrn'] ?? "",
+      hostName: json['HostName'] ?? "",
+      seriesHostName: json['SeriesHostName'] ?? "",
       primaryChannel: json['PrimaryChannel'],
-      primaryChannelSlug: json['PrimaryChannelSlug'],
-      seasonEpisodeNumberingValid: json['SeasonEpisodeNumberingValid'],
+      primaryChannelSlug: json['PrimaryChannelSlug'] ?? "",
+      seasonEpisodeNumberingValid: json['SeasonEpisodeNumberingValid'] ?? false,
       seasonTitle: json['SeasonTitle'],
       seasonSlug: json['SeasonSlug'],
       seasonUrn: json['SeasonUrn'],
-      seasonNumber: json['SeasonNumber'],
+      seasonNumber: json['SeasonNumber'] ?? 0,
       prePremiere: json['PrePremiere'],
       expiresSoon: json['ExpiresSoon'],
-      onlineGenreText: json['OnlineGenreText'],
+      onlineGenreText: json['OnlineGenreText'] ?? "",
       primaryAsset: PrimaryAsset.fromJson(json['PrimaryAsset']),
       hasPublicPrimaryAsset: json['HasPublicPrimaryAsset'] ?? false,
       assetTargetTypes: json['AssetTargetTypes'],
@@ -241,15 +256,15 @@ class ProgramCard {
       slug: json['Slug'],
       urn: json['Urn'],
       primaryImageUri: json['PrimaryImageUri'],
-      presentationUri: json['PresentationUri'],
-      presentationUriAutoplay: json['PresentationUriAutoplay'],
+      presentationUri: json['PresentationUri'] ?? "",
+      presentationUriAutoplay: json['PresentationUriAutoplay'] ?? "",
       title: json['Title'],
-      subtitle: json['Subtitle'],
-      isNewSeries: json['IsNewSeries'],
-      originalTitle: json['OriginalTitle'],
-      rectificationStatus: json['RectificationStatus'],
-      rectificationAuto: json['RectificationAuto'],
-      rectificationText: json['RectificationText'],
+      subtitle: json['Subtitle'] ?? "",
+      isNewSeries: json['IsNewSeries'] ?? false,
+      originalTitle: json['OriginalTitle'] ?? "",
+      rectificationStatus: json['RectificationStatus'] ?? "",
+      rectificationAuto: json['RectificationAuto'] ?? false,
+      rectificationText: json['RectificationText'] ?? "",
     );
   }
 }
@@ -284,13 +299,13 @@ class PrimaryAsset {
       kind: json['Kind'],
       uri: json['Uri'],
       durationInMilliseconds: json['DurationInMilliseconds'],
-      downloadable: json['Downloadable'],
-      restrictedToDenmark: json['RestrictedToDenmark'],
+      downloadable: json['Downloadable'] ?? false,
+      restrictedToDenmark: json['RestrictedToDenmark'] ?? false,
       startPublish: DateTime.parse(json['StartPublish']),
       endPublish: DateTime.parse(json['EndPublish']),
       target: json['Target'],
       encrypted: json['Encrypted'],
-      isLiveStream: json['IsLiveStream'],
+      isLiveStream: json['IsLiveStream'] ?? false,
     );
   }
 }
@@ -347,17 +362,17 @@ class Channel {
       streamingServers: (json['StreamingServers'] as List)
           .map((json) => MuStreamingServer.fromJson(json))
           .toList(),
-      url: json['Url'],
-      sourceUrl: json['SourceUrl'],
+      url: json['Url'] ?? "",
+      sourceUrl: json['SourceUrl'] ?? "",
       webChannel: json['WebChannel'],
       slug: json['Slug'],
       urn: json['Urn'],
       primaryImageUri: json['PrimaryImageUri'],
-      presentationUri: json['PresentationUri'],
-      presentationUriAutoplay: json['PresentationUriAutoplay'],
+      presentationUri: json['PresentationUri'] ?? "",
+      presentationUriAutoplay: json['PresentationUriAutoplay'] ?? "",
       title: json['Title'],
-      itemLabel: json['ItemLabel'],
-      subtitle: json['Subtitle'],
+      itemLabel: json['ItemLabel'] ?? "",
+      subtitle: json['Subtitle'] ?? "",
     );
   }
 
