@@ -49,7 +49,8 @@ class ChannelsHomePage extends StatefulWidget {
   _ChannelsHomePageState createState() => _ChannelsHomePageState();
 }
 
-class _ChannelsHomePageState extends State<ChannelsHomePage> with WidgetsBindingObserver {
+class _ChannelsHomePageState extends State<ChannelsHomePage>
+    with WidgetsBindingObserver {
   DrMuRepository repo = DrMuRepository();
   Future<List<MuNowNext>> channels;
   Timer timer;
@@ -91,6 +92,27 @@ class _ChannelsHomePageState extends State<ChannelsHomePage> with WidgetsBinding
       channels = repo.getScheduleNowNext();
     });
     return channels;
+  }
+
+  ListTile _buildListTile(MuNowNext nowNext) {
+    var programDuration = nowNext.now.endTime.millisecondsSinceEpoch -
+        nowNext.now.startTime.millisecondsSinceEpoch;
+    var programTime = DateTime.now().millisecondsSinceEpoch -
+        nowNext.now.startTime.millisecondsSinceEpoch;
+    var percentage = 100 * programTime / programDuration;
+
+    return ListTile(
+        leading: CircleAvatar(
+          backgroundImage:
+          NetworkImage(nowNext.now.programCard.primaryImageUri),
+          radius: 28,
+        ),
+        title: Text(nowNext.now.title),
+        subtitle: Text(nowNext.now.description + "\n${percentage.toStringAsFixed(0)}% done"),
+        contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+        onTap: () {
+          playTvChannel(nowNext);
+        });
   }
 
   void playTvChannel(MuNowNext nowNext) async {
@@ -135,20 +157,9 @@ class _ChannelsHomePageState extends State<ChannelsHomePage> with WidgetsBinding
                     children: ListTile.divideTiles(
                   context: context,
                   tiles: [
-                    ...snapshot.data.where((it) => it.now != null).map(
-                        (nowNext) => ListTile(
-                            leading: CircleAvatar(
-                              backgroundImage: NetworkImage(
-                                  nowNext.now.programCard.primaryImageUri),
-                              radius: 28,
-                            ),
-                            title: Text(nowNext.now.title),
-                            subtitle: Text(nowNext.now.description),
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 24),
-                            onTap: () {
-                              playTvChannel(nowNext);
-                            }))
+                    ...snapshot.data
+                        .where((it) => it.now != null)
+                        .map((nowNext) => _buildListTile(nowNext))
                   ],
                 ).toList());
               } else if (snapshot.hasError) {
