@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drchannels/videoplayer.dart';
 import 'package:flutter/material.dart';
 
@@ -47,25 +49,48 @@ class ChannelsHomePage extends StatefulWidget {
   _ChannelsHomePageState createState() => _ChannelsHomePageState();
 }
 
-class _ChannelsHomePageState extends State<ChannelsHomePage> {
+class _ChannelsHomePageState extends State<ChannelsHomePage> with WidgetsBindingObserver {
   DrMuRepository repo = DrMuRepository();
   Future<List<MuNowNext>> channels;
+  Timer timer;
 
   @override
   void initState() {
     super.initState();
     channels = repo.getScheduleNowNext();
+
+    _startRefreshTimer();
+
+    WidgetsBinding.instance.addObserver(this);
   }
 
-  void _incrementCounter() {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    print("Current state = $state");
+
+    if (state == AppLifecycleState.resumed) {
+      _startRefreshTimer();
+    } else if (state == AppLifecycleState.paused) {
+      timer?.cancel();
+    }
+  }
+
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  void _startRefreshTimer() {
+    timer = Timer.periodic(Duration(seconds: 30), (Timer t) => _refresh());
+  }
+
+  Future<List<MuNowNext>> _refresh() async {
+    print("Refreshing channels");
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      //_counter++;
+      channels = repo.getScheduleNowNext();
     });
+    return channels;
   }
 
   void playTvChannel(MuNowNext nowNext) async {
@@ -89,7 +114,7 @@ class _ChannelsHomePageState extends State<ChannelsHomePage> {
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
+    // by the _refresh method above.
     //
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
@@ -101,35 +126,38 @@ class _ChannelsHomePageState extends State<ChannelsHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: FutureBuilder<List<MuNowNext>>(
-          future: channels,
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return ListView(
-                  children: ListTile.divideTiles(
-                context: context,
-                tiles: [
-                  ...snapshot.data.where((it) => it.now != null).map(
-                      (nowNext) => ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage: NetworkImage(
-                                nowNext.now.programCard.primaryImageUri),
-                            radius: 28,
-                          ),
-                          title: Text(nowNext.now.title),
-                          subtitle: Text(nowNext.now.description),
-                          contentPadding: EdgeInsets.symmetric(
-                              vertical: 12, horizontal: 24),
-                          onTap: () {
-                            playTvChannel(nowNext);
-                          }))
-                ],
-              ).toList());
-            } else if (snapshot.hasError) {
-              return Text("${snapshot.error}");
-            }
-            return CircularProgressIndicator();
-          },
+        child: new RefreshIndicator(
+          child: FutureBuilder<List<MuNowNext>>(
+            future: channels,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return ListView(
+                    children: ListTile.divideTiles(
+                  context: context,
+                  tiles: [
+                    ...snapshot.data.where((it) => it.now != null).map(
+                        (nowNext) => ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: NetworkImage(
+                                  nowNext.now.programCard.primaryImageUri),
+                              radius: 28,
+                            ),
+                            title: Text(nowNext.now.title),
+                            subtitle: Text(nowNext.now.description),
+                            contentPadding: EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 24),
+                            onTap: () {
+                              playTvChannel(nowNext);
+                            }))
+                  ],
+                ).toList());
+              } else if (snapshot.hasError) {
+                return Text("${snapshot.error}");
+              }
+              return CircularProgressIndicator();
+            },
+          ),
+          onRefresh: _refresh,
         ),
       ),
     );
