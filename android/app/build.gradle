@@ -11,9 +11,13 @@ if (flutterRoot == null) {
     throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
 }
 
+def buildTime() {
+    return Integer.parseInt(new Date().format("yyMMddHH"))
+}
+
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
-    flutterVersionCode = '1'
+    flutterVersionCode = buildTime()
 }
 
 def flutterVersionName = localProperties.getProperty('flutter.versionName')
