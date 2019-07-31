@@ -73,3 +73,4 @@
 
 .gradle
 android/release.properties
+**/ios/build
