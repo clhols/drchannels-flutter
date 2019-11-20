@@ -74,3 +74,4 @@
 .gradle
 android/release.properties
 **/ios/build
+/ios/Flutter/flutter_export_environment.sh
