@@ -31,7 +31,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
     //Hide statusbar.
     SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
-    Wakelock.enable();
+    Wakelock.enable().catchError(handleError);
 
     super.initState();
   }
@@ -42,7 +42,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     _controller.dispose();
 
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-    Wakelock.disable();
+    Wakelock.disable().catchError(handleError);
 
     super.dispose();
   }
@@ -72,5 +72,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         }
       },
     );
+  }
+
+  handleError(e) {
+    print(e.error);
   }
 }
