@@ -52,13 +52,13 @@ class ChannelsHomePage extends StatefulWidget {
 class _ChannelsHomePageState extends State<ChannelsHomePage>
     with WidgetsBindingObserver {
   DrMuRepository repo = DrMuRepository();
-  Future<List<MuNowNext>> channels;
+  Future<List<Channel>> channels;
   Timer timer;
 
   @override
   void initState() {
     super.initState();
-    channels = repo.getScheduleNowNext();
+    channels = repo.getAllActiveDrTvChannels();
 
     _startRefreshTimer();
 
@@ -86,40 +86,33 @@ class _ChannelsHomePageState extends State<ChannelsHomePage>
     timer = Timer.periodic(Duration(seconds: 30), (Timer t) => _refresh());
   }
 
-  Future<List<MuNowNext>> _refresh() async {
+  Future<List<Channel>> _refresh() async {
     print("Refreshing channels");
     setState(() {
-      channels = repo.getScheduleNowNext();
+      channels = repo.getAllActiveDrTvChannels();
     });
     return channels;
   }
 
-  ListTile _buildListTile(MuNowNext nowNext) {
-    var programDuration = nowNext.now.endTime.millisecondsSinceEpoch -
-        nowNext.now.startTime.millisecondsSinceEpoch;
-    var programTime = DateTime.now().millisecondsSinceEpoch -
-        nowNext.now.startTime.millisecondsSinceEpoch;
-    var percentage = 100 * programTime / programDuration;
+  ListTile _buildListTile(Channel channel) {
+    var percentage = 0;
 
     return ListTile(
         leading: CircleAvatar(
           backgroundImage:
-          NetworkImage(nowNext.now.programCard.primaryImageUri),
+          NetworkImage(channel.primaryImageUri),
           radius: 28,
         ),
-        title: Text(nowNext.now.title),
-        subtitle: Text(nowNext.now.description + "\n${percentage.toStringAsFixed(0)}% done"),
+        title: Text(channel.title),
+        subtitle: Text(channel.subtitle),
         contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
         onTap: () {
-          playTvChannel(nowNext);
+          playTvChannel(channel);
         });
   }
 
-  void playTvChannel(MuNowNext nowNext) async {
-    var channels = await repo.getAllActiveDrTvChannels();
-
-    var server =
-        channels.firstWhere((it) => it.slug == nowNext.channelSlug).server();
+  void playTvChannel(Channel channel) async {
+    var server = channel.server();
     var qualities = server.qualities;
     qualities.sort((o1, o2) => o2.kbps.compareTo(o1.kbps));
     var stream = qualities.first.streams.first.stream;
@@ -149,7 +142,7 @@ class _ChannelsHomePageState extends State<ChannelsHomePage>
       ),
       body: Center(
         child: new RefreshIndicator(
-          child: FutureBuilder<List<MuNowNext>>(
+          child: FutureBuilder<List<Channel>>(
             future: channels,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
@@ -158,7 +151,7 @@ class _ChannelsHomePageState extends State<ChannelsHomePage>
                   context: context,
                   tiles: [
                     ...snapshot.data
-                        .where((it) => it.now != null)
+                        .where((it) => it.title != null)
                         .map((nowNext) => _buildListTile(nowNext))
                   ],
                 ).toList());

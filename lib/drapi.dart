@@ -29,7 +29,7 @@ class DrMuRepository implements DrMuApi {
   @override
   Future<List<MuNowNext>> getScheduleNowNext() async {
     final response = await http
-        .get("$API_URL/schedule/nownext-for-all-active-dr-tv-channels");
+        .get(Uri.parse("$API_URL/schedule/nownext-for-all-active-dr-tv-channels"));
 
     if (response.statusCode == 200) {
       // If the call to the server was successful, parse the JSON.
@@ -43,7 +43,7 @@ class DrMuRepository implements DrMuApi {
   @override
   Future<List<Channel>> getAllActiveDrTvChannels() async {
     final response =
-        await http.get("$API_URL/channel/all-active-dr-tv-channels");
+        await http.get(Uri.parse("$API_URL/channel/all-active-dr-tv-channels"));
 
     if (response.statusCode == 200) {
       // If the call to the server was successful, parse the JSON.
